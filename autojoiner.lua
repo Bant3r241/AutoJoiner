@@ -7,7 +7,7 @@ local webhookUrl = "https://discordapp.com/api/webhooks/1397903862089650338/khOV
 while true do
     -- Fetch the latest messages from the Discord webhook
     local success, content = pcall(function()
-        return HttpService:GetAsync(webhookUrl)  -- Fetch the webhook content
+        return HttpService:GetAsync(webhookUrl)  -- Fetch the webhook content (raw JSON response)
     end)
 
     if success and content then
@@ -22,7 +22,7 @@ while true do
             local data = HttpService:JSONDecode(content)  -- Decode JSON response
             
             -- Debugging: Print the decoded data to inspect its structure
-            print("[Debug] Decoded webhook data:", HttpService:JSONEncode(data))  -- Print the entire decoded JSON
+            print("[Debug] Decoded webhook data: ", HttpService:JSONEncode(data))  -- Print the entire decoded JSON
 
             -- Initialize jobId as nil
             local jobId = nil
@@ -33,7 +33,7 @@ while true do
                 for _, field in pairs(embed.fields) do
                     -- Check if the field name is "Job ID"
                     if field.name == "Job ID" then
-                        jobId = field.value  -- Extract the Job ID from the field value
+                        jobId = field.value  -- Extract Job ID
                         break
                     end
                 end
@@ -49,12 +49,12 @@ while true do
                 print("[Teleport Listener] Found Job ID: " .. jobId)  -- Debugging print
                 local placeId = game.PlaceId  -- Get current place ID
 
-                -- Teleport to the Job ID (server)
+                -- Teleport the player to the Job ID (server)
                 TeleportService:TeleportToPlaceInstance(placeId, jobId, game.Players.LocalPlayer)
                 print("[Teleport Listener] Teleporting...")  -- Debugging print
                 wait(30)  -- Wait before checking again
             else
-                print("[Error] No Job ID found in the embeds.")  -- Debugging print
+                print("[Error] No Job ID found in the webhook data.")  -- Debugging print
             end
         end
     else
