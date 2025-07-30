@@ -1,4 +1,3 @@
--- teleport_listener.lua
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 
