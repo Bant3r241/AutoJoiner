@@ -1,32 +1,54 @@
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 
--- URL where the Job ID is stored (replace with the correct URL)
-local jobIdUrl = ""C:\Users\bobby\OneDrive\Desktop\V2 Faster Hope\jobid.txt""  -- Replace with your actual URL
+-- The URL of your Discord webhook (where the Job ID is sent)
+local webhookUrl = "https://discordapp.com/api/webhooks/1397903862089650338/khOV2JDnQiuyRD41WCeLLBPAlYydVHsJ5u3QtsC7mjXlQ7yUF4eridY8NSQXUQjyHlvw"
 
 while true do
-    -- Fetch Job ID from the remote server (Job ID file)
+    -- Fetch the latest messages from the Discord webhook
     local success, content = pcall(function()
-        return HttpService:GetAsync(jobIdUrl)  -- Fetch the Job ID from the server
+        return HttpService:GetAsync(webhookUrl)  -- Fetch the webhook content (JSON response)
     end)
 
-    -- Debugging: Print out the raw response content
-    print("[Debug] Content fetched from URL:", content)  -- Debugging print to show raw response
+    -- Debugging: Print the raw fetched content
+    print("[Debug] Fetched webhook content:", content)
 
     if success and content and content ~= "" then
-        print("[Teleport Listener] Found Job ID:", content)  -- Debugging print
+        -- Parse the JSON content from the webhook
+        local data = HttpService:JSONDecode(content)  -- Decode the JSON response
+        
+        -- Loop through the embeds to find the Job ID
+        local jobId = nil
+        for _, embed in pairs(data.embeds) do
+            -- Loop through fields inside the embed
+            for _, field in pairs(embed.fields) do
+                if field.name == "Job ID" then
+                    jobId = field.value  -- Extract Job ID from the embed field
+                    break
+                end
+            end
 
-        -- Teleport to the job id
-        local placeId = game.PlaceId
-        local jobId = content
+            -- If we found the Job ID, stop looking further
+            if jobId then
+                break
+            end
+        end
 
-        -- Teleport player to job
-        TeleportService:TeleportToPlaceInstance(placeId, jobId, game.Players.LocalPlayer)
-        print("[Teleport Listener] Teleporting...")  -- Debugging print
+        -- If Job ID was found, teleport the player
+        if jobId then
+            print("[Teleport Listener] Found Job ID:", jobId)  -- Debugging print
+            local placeId = game.PlaceId  -- Get current place ID
 
-        wait(30)  -- Wait 30 seconds before the next check to avoid multiple teleports
+            -- Teleport to the Job ID (server)
+            TeleportService:TeleportToPlaceInstance(placeId, jobId, game.Players.LocalPlayer)
+            print("[Teleport Listener] Teleporting...")  -- Debugging print
+            wait(30)  -- Wait 30 seconds before the next check to avoid multiple teleports
+        else
+            print("[Teleport Listener] No Job ID found in the embeds.")  -- Debugging print
+        end
     else
-        print("[Teleport Listener] No Job ID found or failed to fetch content.")  -- Debugging print
-        wait(2)  -- Wait 2 seconds before checking again
+        print("[Teleport Listener] Failed to fetch or no content from the webhook.")  -- Debugging print
     end
+
+    wait(2)  -- Wait before checking the webhook again
 end
