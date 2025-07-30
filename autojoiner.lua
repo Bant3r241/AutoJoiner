@@ -2,7 +2,6 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 
--- ✅ Replace with your ngrok URL
 local apiUrl = "https://350bf1e33cca.ngrok-free.app/jobid"
 
 while true do
@@ -14,7 +13,7 @@ while true do
         print("[Debug] Raw response: " .. response)
 
         local data
-        local ok, err = pcall(function()
+        local ok = pcall(function()
             data = HttpService:JSONDecode(response)
         end)
 
@@ -22,22 +21,22 @@ while true do
             local jobId = data.jobId
             print("[✅] Found Job ID:", jobId)
 
-            -- Make sure there's a player to teleport
-            local player = Players.LocalPlayer or Players:GetPlayers()[1]
+            local player = Players:GetPlayers()[1]  -- Get the first player in the game
+
             if player then
                 TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, player)
-                print("[🚀] Teleporting to Job ID:", jobId)
+                print("[🚀] Teleporting player:", player.Name)
             else
-                print("[⚠️] No local player found to teleport.")
+                print("[⚠️] No players currently in game.")
             end
 
-            wait(30)  -- Delay before checking again
+            wait(30)  -- Wait before checking again
         else
-            print("[❌] Failed to parse job ID from API.")
+            print("[❌] Could not parse valid Job ID.")
         end
     else
-        print("[❌] Failed to fetch Job ID. Error:", response)
+        warn("[❌] HTTP request failed:", response)
     end
 
-    wait(5)  -- Polling interval
+    wait(5)
 end
